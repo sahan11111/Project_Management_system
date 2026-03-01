@@ -35,7 +35,7 @@ const userSchema = new mongoose.Schema({
         trim: true,
         default: null,
     },
-    experties: {
+    expertise: {
         type: [String],
         default: [],
     },
@@ -62,11 +62,36 @@ const userSchema = new mongoose.Schema({
     timestamps: true,
 });
 
+userSchema.pre("save", async function(next) {
+    if (!this.isModified("password")) {
+      return next();
+    }
+    this.password = await bcrypt.hash(this.password, 10);
+});
+
 userSchema.methods.generateToken = function() {
     return jwt.sign({ id: this._id }, process.env.JWT_SECRET, {
         expiresIn: process.env.JWT_EXPIRES_IN,
     });
-}
+};
+
+userSchema.methods.comparePassword = async function(enteredPassword) {
+    return await bcrypt.compare(enteredPassword, this.password);
+};
+
+userSchema.methods.getResetPasswordToken = function() {
+    // Generate a random token
+    const resetToken = crypto.randomBytes(20).toString("hex");
+    
+    // Hash the token and set to resetPasswordToken field
+    this.resetPasswordToken = crypto.createHash("sha256").update(resetToken).digest("hex");
+    
+    // Set token expire time
+    this.resetPasswordExpire = Date.now() + 15 * 60 * 1000;
+
+    // Return the original reset token
+    return resetToken;
+};
 
 
 export const User = mongoose.model("User", userSchema);

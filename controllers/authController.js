@@ -66,10 +66,11 @@ export const getUser = asyncHandler(async (req, res, next) => {
 });
 
 export const forgotPassword = asyncHandler(async (req, res, next) => {
-   const user = await User.findOne({ email: req.body.email });
+    const user = await User.findOne({ email: req.body.email });
     if (!user) {
         return next(new ErrorHandler("User not found with this email", 404));
     }
+
     // Generate reset token
     const resetToken = user.getResetPasswordToken();
 
@@ -86,24 +87,24 @@ export const forgotPassword = asyncHandler(async (req, res, next) => {
         await sendEmail({
             email: user.email,
             subject: "PMS - 🔐 Password Reset Request",
-            message: message
+            message: message,
         });
+
         res.status(200).json({
             success: true,
             message: `Email sent to ${user.email} successfully`,
         });
-        
+
     } catch (error) {
         // Clear reset token and expiry on error
         user.resetPasswordToken = undefined;
         user.resetPasswordExpire = undefined;
         await user.save({ validateBeforeSave: false });
+
+        // ✅ Pass error to next properly
         return next(new ErrorHandler(error.message || "Failed to send email", 500));
     }
-
-
 });
-
 
 export const resetPassword = asyncHandler(async (req, res, next) => {
     const { token } = req.params;
@@ -127,8 +128,4 @@ export const resetPassword = asyncHandler(async (req, res, next) => {
     user.resetPasswordExpire = undefined;
     await user.save();
     generateToken(user,200,"Password reset successfully",res);
-    res.status(200).json({
-        success: true,
-        message: "Password reset successfully",
-    });
 });

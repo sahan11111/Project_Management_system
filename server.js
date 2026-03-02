@@ -1,7 +1,13 @@
 import { config } from 'dotenv';
 config();
 
-
+// ✅ ADD THIS DEBUG BLOCK
+console.log("=== ENV CHECK ===");
+console.log("SMTP_SERVICE:", process.env.SMTP_SERVICE);
+console.log("SMTP_USER:", process.env.SMTP_USER);
+console.log("SMTP_PASS:", process.env.SMTP_PASS ? "✅ Loaded" : "❌ MISSING");
+console.log("FRONTEND_URL:", process.env.FRONTEND_URL);
+console.log("=================");
 import { connectDB } from './config/db.js';
 import app from './app.js';
 

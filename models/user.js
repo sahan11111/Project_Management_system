@@ -62,9 +62,10 @@ const userSchema = new mongoose.Schema({
     timestamps: true,
 });
 
-userSchema.pre("save", async function(next) {
+// ✅ FIXED - removed next parameter, use return instead
+userSchema.pre("save", async function() {
     if (!this.isModified("password")) {
-      return next();
+        return; // ✅ Just return, don't call next()
     }
     this.password = await bcrypt.hash(this.password, 10);
 });

@@ -59,3 +59,37 @@ export const getAllStudents = asyncHandler(async (req, res, next) => {
 });
 
 
+export const createTeacher = asyncHandler(async (req, res, next) => {
+    const { 
+        name, 
+        email, 
+        password, 
+        department, 
+        expertise, 
+        maxStudents 
+    } = req.body;
+
+    if (!name || !email || !password || !department || !expertise || !maxStudents) {
+        return next(new ErrorHandler("Please fill all fields", 400));
+    }
+
+    const user = await userServices.createUser({
+        name,
+        email,
+        password,
+        department,
+        expertise: Array.isArray(expertise)
+            ? expertise
+            : typeof expertise === "string" && expertise.trim() !== ""
+                ? expertise.split(",").map((e) => e.trim())
+                : [],
+        maxStudents,
+        role: "Teacher"
+    });
+
+    res.status(201).json({
+        success: true,
+        message: "Teacher created successfully",
+        data: { user }
+    });
+});

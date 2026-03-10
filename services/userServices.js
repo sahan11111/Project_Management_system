@@ -11,13 +11,24 @@ export const createUser = async(userData) => {
 };
 
 
+// export const updateUser = async (id, updateData) => {
+//     try {
+
+//         return await User.findByIdAndUpdate(
+//             id,
+//             updateData,
+//             { new: true, runValidators: true }).select("-password");
+//     } catch (error) {
+//         throw new Error("Error updating user: " + error.message);
+//     }
+// };
 export const updateUser = async (id, updateData) => {
     try {
-
         return await User.findByIdAndUpdate(
             id,
             updateData,
-            { new: true, runValidators: true }).select("-password");
+            { returnDocument: "after", runValidators: true }
+        ).select("-password");
     } catch (error) {
         throw new Error("Error updating user: " + error.message);
     }
@@ -41,4 +52,15 @@ export const getUsersByRole = async (role) => {
     return await User.find({ role }).select(
         "-password -resetPasswordToken -resetPasswordExpire"
     );
+};
+
+export const getAllUsers = async () => {
+    const query = { role: { $ne: "Admin" } }; // Exclude Super Admin
+
+    const users = await User.find(query).select(
+        "-password -resetPasswordToken -resetPasswordExpire"
+    ).sort({ createdAt: -1 }); // Sort by creation date (newest first)
+
+    
+    return users;
 };

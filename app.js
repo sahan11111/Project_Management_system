@@ -6,9 +6,15 @@ import { errorMiddleware } from "./middlewares/error.js"; // ✅ named import
 import router from './router/userRoutes.js';
 import adminRouter from './router/adminRoutes.js';
 import studentRouter from './router/studentRoutes.js';
-
+import path from 'path';
+import { fileURLToPath } from 'url';
+import fs from 'fs';
 
 config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 
 const app = express();
 
@@ -17,6 +23,14 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true,
 }));
+
+const uploadsDir = path.join(__dirname, "uploads"); //
+const tempDir = path.join(__dirname, "temp");
+
+if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, {recursive : true});
+if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, {recursive : true});
+
+
 
 app.use(cookieParser());
 app.use(express.json());

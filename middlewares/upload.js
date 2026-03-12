@@ -31,6 +31,82 @@ const storage = multer.diskStorage({
     },
     filename: (req, file, cb) => {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, uniqueSuffix + path.extname(file.originalname));
+        cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
     }
 });
+
+const fileFilter = (req, file, cb) => {
+    const allowedTypes = [
+        "application/pdf",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "application/vnd.ms-powerpoint",
+        "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        "application/zip",
+        "application/x-zip-compressed",
+        "application/x-rar-compressed",
+        "application/x-rar",
+        "application/vnd.rar",
+        "application/octet-stream",
+        "image/jpeg",
+        "image/png",
+        "image/gif",
+        "text/plain",
+        "application/javascript",
+        "text/css",
+        "text/html",
+        "application/json",
+    ];
+    const allowedExtensions = [
+        ".pdf",
+        ".doc",
+        ".docx",
+        ".ppt",
+        ".pptx",
+        ".zip",
+        ".rar",
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".gif",
+        ".txt",
+        ".js",
+        ".css",
+        ".html",
+        ".json",
+    ];
+
+    const fileExt = path.extname(file.originalname).toLowerCase();
+
+    if (allowedTypes.includes(file.mimetype) || allowedExtensions.includes(fileExt)) {
+        cb(null, true);
+    } else {
+        cb(new Error('Only document, image, and code files are allowed'), false);
+    } 
+};
+    
+
+export const upload = multer({
+    storage,
+    limits: { 
+        fileSize: 10 * 1024 * 1024 , file : 10 }, // 10MB limit to 10 files
+    fileFilter
+});
+
+const handleUploadError = (err, req, res, next) => {
+    if (err instanceof multer.MulterError) {
+        if (err.code === "LIMIT_FILE_SIZE") {
+            return res.status(400).json({ success: false, message: "File size exceeds the 10MB limit" });
+        }
+        if (err.code === "LIMIT_FILE_COUNT") {
+            return res.status(400).json({ success: false, message: "File count exceeds the limit of 10 files" });
+        }
+        if(err.message && err.message.includes("invalid file type")) {
+            return res.status(400).json({ success: false, message: err.message });
+        }
+    }
+    next(err);
+};
+
+
+export { handleUploadError };

@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import { errorMiddleware } from "./middlewares/error.js"; // ✅ named import
 import router from './router/userRoutes.js';
 import adminRouter from './router/adminRoutes.js';
+import studentRouter from './router/studentRoutes.js';
 
 
 config();
@@ -24,6 +25,8 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use('/api/v1/auth', router);
 app.use('/api/v1/admin', adminRouter);
+app.use('/api/v1/student', studentRouter);
+
 
 app.use(errorMiddleware); // ✅ must be last, must have 4 params (err, req, res, next)
 

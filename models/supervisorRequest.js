@@ -1,0 +1,38 @@
+import mongoose from "mongoose";
+
+const supervisorRequestSchema = new mongoose.Schema({
+    student : {
+        type : mongoose.Schema.Types.ObjectId,
+        ref : "User",
+        required : [true, "Student ID is required"],
+    },
+    supervisor: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: [true, "Supervisor ID is required"],
+    },
+    message: {
+        type: String,
+        required: [true, "Message is required"],
+        trim: true,
+        maxLength: [250, "Message cannot exceed 250 characters"],
+    },
+    status: {
+        type: String,
+        enum: ["pending", "approved", "rejected"],
+        default: "pending",
+    },
+},
+{
+    // Give us createdAt and updatedAt fields automatically
+    timestamps: true,
+}
+);
+
+// indexing for better query performance
+supervisorRequestSchema.index({ student: 1 });
+supervisorRequestSchema.index({ supervisor: 1 });
+supervisorRequestSchema.index({ status: 1 });
+
+
+export const SupervisorRequest = mongoose.models.SupervisorRequest || mongoose.model("SupervisorRequest", supervisorRequestSchema);

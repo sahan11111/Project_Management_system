@@ -1,0 +1,100 @@
+import asyncHandler from "../middlewares/asyncHandler.js";
+import ErrorHandler from "../middlewares/error.js";
+import { User } from "../models/user.js";
+import { Project } from "../models/project.js";
+import * as userServices from "../services/userServices.js";
+import * as projectService from "../services/projectService.js";
+
+export const getStudentProject = asyncHandler(async (req, res, next) => {
+    const studentId = req.user._id;
+
+    const project = await projectService.getProjectByStudentId(studentId);
+    if (!project) {
+        res.status(200).json({
+            success: true,
+            data: {
+                project: null
+            },
+            message: "No project found for this student"
+        });
+    } else {
+        res.status(200).json({
+            success: true,
+            data: {
+                project
+            },
+            message: "Project retrieved successfully"
+        });
+    }
+}); 
+
+export const submitProposal = asyncHandler(async (req, res, next) => {
+    const { title, description } = req.body;
+    const studentId = req.user._id;
+
+    const existingProject = await projectService.getProjectByStudentId(studentId);
+
+    if (existingProject && existingProject.status !== "rejected") {
+        return next(new ErrorHandler(
+            "You already have a pending or approved project proposal",
+             400
+        ));
+    }
+
+    projectData = {
+        student: studentId,
+        title,
+        description,
+    };
+
+    const project = await projectService.createProject(projectData);
+
+    await User.findByIdAndUpdate(studentId, { projects: project._id } );
+
+    res.status(201).json({
+        success: true,
+        data: {
+            project
+        },
+        message: "Proposal submitted successfully"
+    });
+
+});
+
+export const uploadFile = asyncHandler(async (req, res, next) => {
+    const {projectId} = req.params;
+    const studentId = req.user._id;
+    const project = await projectService.getProjectById(projectId);
+
+    if (!project || project.student.toString() !== studentId.toString()) {
+        return next(new ErrorHandler("Project not found or access denied", 404));
+    }
+    if (!req.file || !req.file.length === 0) {
+        return next(new ErrorHandler("No file uploaded", 400));
+    }
+    const updatedProject = await projectService.addFileToProject(projectId, req.file);
+
+    res.status(200).json({
+        success: true,
+        data: {
+            project: updatedProject
+        },
+        message: "File uploaded successfully"
+    });
+});
+
+export const getAvailableSupervisors = asyncHandler(async (req, res, next) => {
+    const supervisors = await User
+    .find({ role: "Teacher" })
+    .select("name email department expertise ")
+    .lean(); // Use lean() for better performance when no Mongoose document methods are needed only for read operations
+    res.status(200).json({
+        success: true,
+        data: {
+            supervisors
+        },
+        message: "Available supervisors fetched successfully"
+    });
+
+});
+

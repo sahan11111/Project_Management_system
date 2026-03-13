@@ -41,7 +41,7 @@ export const submitProposal = asyncHandler(async (req, res, next) => {
         ));
     }
 
-    projectData = {
+    const projectData = {
         student: studentId,
         title,
         description,

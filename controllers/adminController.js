@@ -3,7 +3,7 @@ import ErrorHandler from "../middlewares/error.js";
 import { User } from "../models/user.js";
 import * as userServices from "../services/userServices.js";
 
-
+// Controller function to create a new student
 export const createStudent =asyncHandler(async (req, res,next) => {
     const { name, email, password, department } = req.body;
     if (!name || !email || !password || !department) {
@@ -17,6 +17,7 @@ export const createStudent =asyncHandler(async (req, res,next) => {
     });
 });
 
+// Controller function to update a student by ID
 export const updateStudent = asyncHandler(async (req, res, next) => {
     const { id } = req.params;
     const updateData = { ...req.body };
@@ -33,6 +34,7 @@ export const updateStudent = asyncHandler(async (req, res, next) => {
     });
 });
 
+// Controller function to delete a teacher by ID
 export const deleteStudent = asyncHandler(async (req, res, next) => {
     const { id } = req.params;
     const user = await userServices.getUserById(id);
@@ -49,6 +51,7 @@ export const deleteStudent = asyncHandler(async (req, res, next) => {
     });
 });
 
+// Additional controller functions for fetching all students, etc. can be implemented similarly
 export const getAllStudents = asyncHandler(async (req, res, next) => {
     const students = await userServices.getUsersByRole("Student");
     res.status(200).json({
@@ -58,7 +61,7 @@ export const getAllStudents = asyncHandler(async (req, res, next) => {
     });
 });
 
-
+// Additional controller functions for fetching all students, etc. can be implemented similarly
 export const createTeacher = asyncHandler(async (req, res, next) => {
     const { 
         name, 
@@ -94,6 +97,7 @@ export const createTeacher = asyncHandler(async (req, res, next) => {
     });
 });
 
+// Additional controller functions for fetching all teachers, etc. can be implemented similarly
 export const updateTeacher = asyncHandler(async (req, res, next) => {
     const { id } = req.params;
     const updateData = { ...req.body };
@@ -117,6 +121,7 @@ export const updateTeacher = asyncHandler(async (req, res, next) => {
     });
 });
 
+// Additional controller functions for fetching all teachers, etc. can be implemented similarly
 export const deleteTeacher = asyncHandler(async (req, res, next) => {
     const { id } = req.params;
     const user = await userServices.getUserById(id);
@@ -133,6 +138,7 @@ export const deleteTeacher = asyncHandler(async (req, res, next) => {
     });
 });
 
+// Additional controller functions for fetching all teachers, etc. can be implemented similarly
 export const getAllTeachers = asyncHandler(async (req, res, next) => {
     const teachers = await userServices.getUsersByRole("Teacher");
     res.status(200).json({

@@ -7,6 +7,7 @@ import * as projectService from "../services/projectService.js";
 import * as requestService from "../services/requestService.js";
 import * as notificationService from "../services/notificationService.js";
 
+// Controller function to get the current project of the student
 export const getStudentProject = asyncHandler(async (req, res, next) => {
     const studentId = req.user._id;
 
@@ -30,6 +31,7 @@ export const getStudentProject = asyncHandler(async (req, res, next) => {
     }
 }); 
 
+// Controller function to handle project proposal submission
 export const submitProposal = asyncHandler(async (req, res, next) => {
     const { title, description } = req.body;
     const studentId = req.user._id;
@@ -63,6 +65,7 @@ export const submitProposal = asyncHandler(async (req, res, next) => {
 
 });
 
+// Controller function to handle file uploads for a project
 export const uploadFile = asyncHandler(async (req, res, next) => {
     const {projectId} = req.params;
     const studentId = req.user._id;
@@ -85,6 +88,7 @@ export const uploadFile = asyncHandler(async (req, res, next) => {
     });
 });
 
+// Controller function to get available supervisors for the student to choose from
 export const getAvailableSupervisors = asyncHandler(async (req, res, next) => {
     const supervisors = await User
     .find({ role: "Teacher" })
@@ -100,6 +104,7 @@ export const getAvailableSupervisors = asyncHandler(async (req, res, next) => {
 
 });
 
+// Controller function to get the assigned supervisor for the student
 export const getSupervisor = asyncHandler(async (req, res, next) => {
     const studentId = req.user._id;
     const student = await User.findById(studentId).populate("supervisor", "name email department expertise").lean(); // Use lean() for better performance when no Mongoose document methods are needed only for read operations
@@ -120,7 +125,7 @@ export const getSupervisor = asyncHandler(async (req, res, next) => {
     
 });
 
-
+// Additional controller functions for fetching all supervisors, requesting a supervisor, etc. can be implemented similarly
 export const requestSupervisor = asyncHandler(async (req, res, next) => {
     const teacherId = req.body;
     const studentId = req.user._id;

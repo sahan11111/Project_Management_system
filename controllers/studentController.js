@@ -1,5 +1,6 @@
 import asyncHandler from "../middlewares/asyncHandler.js";
 import ErrorHandler from "../middlewares/error.js";
+import mongoose from "mongoose";
 import { User } from "../models/user.js";
 import { Project } from "../models/project.js";
 import * as userServices from "../services/userServices.js";
@@ -127,15 +128,26 @@ export const getSupervisor = asyncHandler(async (req, res, next) => {
 
 // Additional controller functions for fetching all supervisors, requesting a supervisor, etc. can be implemented similarly
 export const requestSupervisor = asyncHandler(async (req, res, next) => {
-    const teacherId = req.body;
+    const { teacherId, message } = req.body;
     const studentId = req.user._id;
+    const normalizedTeacherId = typeof teacherId === "object"
+        ? teacherId?._id || teacherId?.id
+        : teacherId;
+
+    if (!normalizedTeacherId) {
+        return next(new ErrorHandler("Teacher ID is required", 400));
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(normalizedTeacherId)) {
+        return next(new ErrorHandler("Invalid teacher ID", 400));
+    }
 
     const student = await User.findById(studentId);
     if(student.supervisor) {
         return next(new ErrorHandler("You already have a supervisor assigned", 400));
     }
 
-    const supervisor = await User.findById(teacherId);
+    const supervisor = await User.findById(normalizedTeacherId);
     if (!supervisor || supervisor.role !== "Teacher") {
         return next(new ErrorHandler("Teacher not found", 404));
     }
@@ -146,25 +158,29 @@ export const requestSupervisor = asyncHandler(async (req, res, next) => {
 
     const requestData = {
         student: studentId,
-        supervisor: teacherId,
-        message,
+        supervisor: normalizedTeacherId,
+        message: (message || `${student.name} requested you as a supervisor.`).trim(),
     };
 
-    const request = await requestService.createRequest(requestData);
+    const { request, isExisting } = await requestService.createRequest(requestData);
 
-    await notificationService.notifyUser(
-        teacherId,
-        `You have a new supervisor request from ${student.name}`,
-        "request",
-        "/teacher/requests",
-        "medium",
-        
-    );
+    if (!isExisting) {
+        await notificationService.notifyUser(
+            normalizedTeacherId,
+            `You have a new supervisor request from ${student.name}`,
+            "request",
+            "/teacher/requests",
+            "medium",
+        );
+    }
+
     res.status(200).json({
         success: true,
         data: {
             request
         },
-        message: "Supervisor request sent successfully"
+        message: isExisting
+            ? "Request already exists. Please wait for the previous request to be processed."
+            : "Supervisor request sent successfully"
     });
 });

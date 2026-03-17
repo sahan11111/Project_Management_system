@@ -71,14 +71,18 @@ export const uploadFile = asyncHandler(async (req, res, next) => {
     const {projectId} = req.params;
     const studentId = req.user._id;
     const project = await projectService.getProjectById(projectId);
+    const uploadedFiles = [
+        ...(req.files?.files || []),
+        ...(req.files?.file || []),
+    ];
 
     if (!project || project.student.toString() !== studentId.toString()) {
         return next(new ErrorHandler("Project not found or access denied", 404));
     }
-    if (!req.file || !req.file.length === 0) {
+    if (uploadedFiles.length === 0) {
         return next(new ErrorHandler("No file uploaded", 400));
     }
-    const updatedProject = await projectService.addFileToProject(projectId, req.file);
+    const updatedProject = await projectService.addFileToProject(projectId, uploadedFiles);
 
     res.status(200).json({
         success: true,

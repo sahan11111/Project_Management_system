@@ -18,7 +18,10 @@ const studentRouter = express.Router();
 studentRouter.get('/project', isAuthenticated, isAuthorized("Student"), getStudentProject);
 studentRouter.post('/proposal', isAuthenticated, isAuthorized("Student"), submitProposal);
 studentRouter.post('/upload-file/:projectId', isAuthenticated, isAuthorized("Student"),
-upload.array('files', 10),
+upload.fields([
+    { name: 'files', maxCount: 10 },
+    { name: 'file', maxCount: 10 }
+]),
 handleUploadError,
 uploadFile);
 studentRouter.get('/supervisors', isAuthenticated, isAuthorized("Student"), getAvailableSupervisors);

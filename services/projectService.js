@@ -31,10 +31,10 @@ export const addFileToProject = async (projectId, files) => {
         throw new ErrorHandler("Project not found", 404);
     }
     const fileMetadata = files.map((file) => ({
-        fieType: file.mimetype,
+        fileType: file.mimetype,
         fileUrl: file.path,
-        originalName: file.originalname,
-        updatedAt: new Date(),
+        orginalName: file.originalname,
+        uploadedAt: new Date(),
     }));
     project.files.push(...fileMetadata);
     await project.save();

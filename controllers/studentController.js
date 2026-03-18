@@ -7,6 +7,7 @@ import * as userServices from "../services/userServices.js";
 import * as projectService from "../services/projectService.js";
 import * as requestService from "../services/requestService.js";
 import * as notificationService from "../services/notificationService.js";
+import { Notification } from "../models/notification.js";
 
 // Controller function to get the current project of the student
 export const getStudentProject = asyncHandler(async (req, res, next) => {
@@ -186,5 +187,66 @@ export const requestSupervisor = asyncHandler(async (req, res, next) => {
         message: isExisting
             ? "Request already exists. Please wait for the previous request to be processed."
             : "Supervisor request sent successfully"
+    });
+});
+
+export const getDashboardStats = asyncHandler(async (req, res, next) => {
+    const studentId = req.user._id;
+
+    const project = await Project.findOne({ student: studentId }).sort({ createdAt: -1 }).populate("supervisor", "name").lean(); // Use lean() for better performance when no Mongoose document methods are needed only for read operations
+    
+    const now = new Date();
+    const upcomingDeadlines =  await Project.find({
+        student: studentId,
+        deadline: { $gte: now }
+    }).select("title description").sort({ deadline: 1 }).limit(3).lean(); // Use lean() for better performance when no Mongoose document methods are needed only for read operations
+
+    const topNotifications = await Notification.find({ 
+        user: studentId})
+        .populate("user", "name")
+        .sort({ createdAt: -1 })
+        .limit(3)
+        .lean(); // Use lean() for better performance when no Mongoose document methods are needed only for read operations
+
+    const feedbackNotifications = 
+        project?.feedback && project?.feedback.length > 0
+        ? project.feedback
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(0, 3)
+        : [];
+
+    const supervisorName = project?.supervisor?.name || "No supervisor assigned";
+
+    res.status(200).json({
+        success: true,
+        data: {
+            project,
+            upcomingDeadlines,
+            topNotifications,
+            feedbackNotifications,
+            supervisorName
+        },
+        message: "Dashboard stats fetched successfully"
+    });
+
+});
+
+export const getFeedback = asyncHandler(async (req, res, next) => {
+    const {projectId} = req.params;
+    const studentId = req.user._id;
+    const project = await projectService.getProjectById(projectId);
+
+    if (!project || project.student.toString() !== studentId.toString()) {
+        return next(new ErrorHandler("Project not found or access denied", 404));
+    }
+
+    const sortedFeedback = project.feedback.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // Sort feedback by most recent first
+
+    res.status(200).json({
+        success: true,
+        data: {
+            feedback: sortedFeedback
+        },
+        message: "Feedback fetched successfully"
     });
 });

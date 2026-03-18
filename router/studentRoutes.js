@@ -5,7 +5,9 @@ import {
     uploadFile,
     getAvailableSupervisors,
     getSupervisor,
-    requestSupervisor
+    requestSupervisor,
+    getFeedback,
+    getDashboardStats
  } from '../controllers/studentController.js';
 import multer from 'multer';
 import path from 'path';
@@ -27,5 +29,7 @@ uploadFile);
 studentRouter.get('/supervisors', isAuthenticated, isAuthorized("Student"), getAvailableSupervisors);
 studentRouter.get('/supervisor', isAuthenticated, isAuthorized("Student"), getSupervisor);
 studentRouter.post('/request-supervisor', isAuthenticated, isAuthorized("Student"), requestSupervisor);
+studentRouter.get('/feedback/:projectId', isAuthenticated, isAuthorized("Student"), getFeedback);
+studentRouter.get('/fetch-dashboard-stats', isAuthenticated, isAuthorized("Student"), getDashboardStats);
 
 export default studentRouter;

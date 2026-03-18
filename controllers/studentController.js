@@ -7,6 +7,7 @@ import * as userServices from "../services/userServices.js";
 import * as projectService from "../services/projectService.js";
 import * as requestService from "../services/requestService.js";
 import * as notificationService from "../services/notificationService.js";
+import * as fileService from "../services/fileService.js";
 import { Notification } from "../models/notification.js";
 
 // Controller function to get the current project of the student
@@ -249,4 +250,18 @@ export const getFeedback = asyncHandler(async (req, res, next) => {
         },
         message: "Feedback fetched successfully"
     });
+});
+
+export const downloadFile = asyncHandler(async (req, res, next) => {
+    const {projectId, fileId} = req.params;
+    const studentId = req.user._id;
+    const project = await projectService.getProjectById(projectId);
+    if (!project || project.student.toString() !== studentId.toString()) {
+        return next(new ErrorHandler("Project not found or access denied", 404));
+    }
+    const file = project.files.id(fileId);
+    if (!file) {
+        return next(new ErrorHandler("File not found", 404));
+    }
+    fileService.streamFileDownload(file.fileUrl, file.originalName, res);
 });

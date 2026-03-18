@@ -26,7 +26,7 @@ const projectSchema = new mongoose.Schema({
     status : {
         type : String,
         default : "Pending",
-        enum : ["Pending", "Approved", "Rejected"],
+        enum : ["Pending", "Approved", "Rejected","Completed"],
     },
     files : [{
         fileType : {

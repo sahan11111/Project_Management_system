@@ -52,16 +52,6 @@ export const deleteStudent = asyncHandler(async (req, res, next) => {
 });
 
 // Additional controller functions for fetching all students, etc. can be implemented similarly
-export const getAllStudents = asyncHandler(async (req, res, next) => {
-    const students = await userServices.getUsersByRole("Student");
-    res.status(200).json({
-        success: true,
-        message: "Students retrieved successfully",
-        data: { students },
-    });
-});
-
-// Additional controller functions for fetching all students, etc. can be implemented similarly
 export const createTeacher = asyncHandler(async (req, res, next) => {
     const { 
         name, 
@@ -138,17 +128,6 @@ export const deleteTeacher = asyncHandler(async (req, res, next) => {
     });
 });
 
-// Additional controller functions for fetching all teachers, etc. can be implemented similarly
-export const getAllTeachers = asyncHandler(async (req, res, next) => {
-    const teachers = await userServices.getUsersByRole("Teacher");
-    res.status(200).json({
-        success: true,
-        message: "Teachers retrieved successfully",
-        data: { teachers },
-    });
-});
-
-
 // get all users (students + teachers)
 export const getAllUsers = asyncHandler(async (req, res, next) => {
     const users = await userServices.getAllUsers();
@@ -159,3 +138,5 @@ export const getAllUsers = asyncHandler(async (req, res, next) => {
         data: { users },
     });
 });
+
+

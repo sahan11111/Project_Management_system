@@ -7,7 +7,8 @@ import {
     getSupervisor,
     requestSupervisor,
     getFeedback,
-    getDashboardStats
+    getDashboardStats,
+    downloadFile
  } from '../controllers/studentController.js';
 import multer from 'multer';
 import path from 'path';
@@ -31,5 +32,6 @@ studentRouter.get('/supervisor', isAuthenticated, isAuthorized("Student"), getSu
 studentRouter.post('/request-supervisor', isAuthenticated, isAuthorized("Student"), requestSupervisor);
 studentRouter.get('/feedback/:projectId', isAuthenticated, isAuthorized("Student"), getFeedback);
 studentRouter.get('/fetch-dashboard-stats', isAuthenticated, isAuthorized("Student"), getDashboardStats);
+studentRouter.get('/download-file/:projectId/:fileId', isAuthenticated, isAuthorized("Student"), downloadFile);
 
 export default studentRouter;

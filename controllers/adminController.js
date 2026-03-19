@@ -139,4 +139,12 @@ export const getAllUsers = asyncHandler(async (req, res, next) => {
     });
 });
 
+export const getAllStudents = asyncHandler(async (req, res, next) => {
+    const students = await userServices.getUsersByRole("Student");
+    res.status(200).json({
+        success: true,
+        message: "Students fetched successfully",
+        data: { students },
+    });
+});
 

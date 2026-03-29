@@ -145,7 +145,7 @@ export const assignSupervisor = asyncHandler(async (req, res, next) => {
 });
 
 export const getAllProjects = asyncHandler(async (req, res, next) => {
-    const { projects } = await projectService.getAllProjects();
+    const projects = await projectService.getAllProjects();
     res.json({
         success: true,
         message: "Projects fetched successfully",

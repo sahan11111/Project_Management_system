@@ -2,6 +2,7 @@ import asyncHandler from "../middlewares/asyncHandler.js";
 import ErrorHandler from "../middlewares/error.js";
 import { User } from "../models/user.js";
 import * as userServices from "../services/userServices.js";
+import * as projectService from "../services/projectService.js";
 
 // Controller function to create a new student
 export const createStudent =asyncHandler(async (req, res,next) => {
@@ -139,13 +140,18 @@ export const getAllUsers = asyncHandler(async (req, res, next) => {
     });
 });
 
-export const getAllStudents = asyncHandler(async (req, res, next) => {
-    const students = await userServices.getUsersByRole("Student");
-    res.status(200).json({
-        success: true,
-        message: "Students fetched successfully",
-        data: { students },
-    });
+export const assignSupervisor = asyncHandler(async (req, res, next) => {
+    
 });
 
+export const getAllProjects = asyncHandler(async (req, res, next) => {
+    const { projects } = await projectService.getAllProjects();
+    res.json({
+        success: true,
+        message: "Projects fetched successfully",
+        data: { projects },
+     });
+});
+
+export const getDashboardStats = asyncHandler(async (req, res, next) => {});
 

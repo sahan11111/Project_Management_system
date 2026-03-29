@@ -1,5 +1,5 @@
 import fs from "fs";
-import ErrorHandler from "../utils/errorHandler.js";
+import ErrorHandler from "../middlewares/error.js";
 export const streamFileDownload = (filePath, originalName, res) => {
     try {
         if (!fs.existsSync(filePath)) {

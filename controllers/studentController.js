@@ -40,14 +40,19 @@ export const submitProposal = asyncHandler(async (req, res, next) => {
     const studentId = req.user._id;
 
     const existingProject = await projectService.getProjectByStudentId(studentId);
+    const existingStatus = (existingProject?.status || "").trim().toLowerCase();
+    const hasBlockingProposal = ["pending", "approved", "completed"].includes(existingStatus);
 
-    if (existingProject && existingProject.status !== "rejected") {
+    if (existingProject && hasBlockingProposal) {
         return next(new ErrorHandler(
             "You already have a pending or approved project proposal",
              400
         ));
     }
 
+    if (existingProject && existingStatus === "rejected") {
+        await Project.findByIdAndDelete(existingProject._id);
+    }
     const projectData = {
         student: studentId,
         title,
@@ -114,8 +119,32 @@ export const getAvailableSupervisors = asyncHandler(async (req, res, next) => {
 // Controller function to get the assigned supervisor for the student
 export const getSupervisor = asyncHandler(async (req, res, next) => {
     const studentId = req.user._id;
-    const student = await User.findById(studentId).populate("supervisor", "name email department expertise").lean(); // Use lean() for better performance when no Mongoose document methods are needed only for read operations
+    const student = await User.findById(studentId)
+        .populate("supervisor", "name email department expertise")
+        .lean(); // Use lean() for better performance when no Mongoose document methods are needed only for read operations
+
+    if (!student) {
+        return next(new ErrorHandler("Student not found", 404));
+    }
+
     if (!student.supervisor) {
+        const latestProject = await Project.findOne({ student: studentId })
+            .sort({ createdAt: -1 })
+            .populate("supervisor", "name email department expertise")
+            .lean();
+
+        if (latestProject?.supervisor) {
+            await User.findByIdAndUpdate(studentId, { supervisor: latestProject.supervisor._id });
+
+            return res.status(200).json({
+                success: true,
+                data: {
+                    supervisor: latestProject.supervisor,
+                },
+                message: "Supervisor fetched successfully"
+            });
+        }
+
         return res.status(200).json({
             success: true,
             data: { supervisor: null },

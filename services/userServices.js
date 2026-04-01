@@ -10,7 +10,6 @@ export const createUser = async(userData) => {
     }
 };
 
-
 // export const updateUser = async (id, updateData) => {
 //     try {
 

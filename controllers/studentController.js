@@ -83,8 +83,16 @@ export const uploadFile = asyncHandler(async (req, res, next) => {
         ...(req.files?.file || []),
     ];
 
-    if (!project || project.student.toString() !== studentId.toString()) {
-        return next(new ErrorHandler("Project not found or access denied", 404));
+    console.log(project);
+    console.log(studentId); // Debugging log to check the structure of uploaded files
+
+    const projectStudentId = project?.student?._id?.toString?.() || project?.student?.toString?.();
+    if (!projectStudentId) {
+        return next(new ErrorHandler("Project student record is missing", 400));
+    }
+
+    if (projectStudentId !== studentId.toString()) {
+        return next(new ErrorHandler("Access denied for this project", 403));
     }
     if (uploadedFiles.length === 0) {
         return next(new ErrorHandler("No file uploaded", 400));

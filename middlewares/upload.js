@@ -18,7 +18,10 @@ const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         let uploadPath;
 
-        if (req.route.path.includes("/upload-file/:projectId")) {
+        if (
+            req.route.path.includes("/upload-file/:projectId") ||
+            req.route.path.includes("/upload-files/:projectId")
+        ) {
             uploadPath = path.join(__dirname, "../uploads/projects", req.params.projectId);
         } else if(req.route.path.includes("/upload/:userId")) {
             uploadPath = path.join(__dirname, "../uploads/users", req.params.userId);

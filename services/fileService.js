@@ -3,13 +3,21 @@ import ErrorHandler from "../middlewares/error.js";
 export const streamFileDownload = (filePath, originalName, res) => {
     try {
         if (!fs.existsSync(filePath)) {
-            return new ErrorHandler("File not found", 404);
+            return res.status(404).json({
+                success: false,
+                message: "File not found on server",
+            });
         }
 
         res.download(filePath, originalName, (err) => {
             if (err) {
                 console.error("Error downloading file:", err);
-                return new ErrorHandler("Error downloading file", 500);
+                if (!res.headersSent) {
+                    return res.status(500).json({
+                        success: false,
+                        message: "Error downloading file",
+                    });
+                }
             }
         });
 

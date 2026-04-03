@@ -10,14 +10,14 @@ export const notifyUser = async (
     userId,
     message,
     type = "general",
-    // link = null,
+    link = null,
     priority = "low"
 ) => {
     const notificationData = {
         user: userId,
         message,
         type,
-        // link,
+        link,
         priority,
     };
     return await createNotification(notificationData);

@@ -9,10 +9,16 @@ export const createRequest = async (requestData) => {
     });
 
     if (existingRequest) {
-        throw new ErrorHandler("Request already exists. Please wait for the previous request to be processed.", 400);
+        return {
+            request: existingRequest,
+            isExisting: true,
+        };
     }
 
     const request = await SupervisorRequest.create(requestData);
-    return await request.save();    
+    return {
+        request,
+        isExisting: false,
+    };
 };
 

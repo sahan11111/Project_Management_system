@@ -273,8 +273,9 @@ export const getFeedback = asyncHandler(async (req, res, next) => {
     const {projectId} = req.params;
     const studentId = req.user._id;
     const project = await projectService.getProjectById(projectId);
+    const projectStudentId = project?.student?._id?.toString?.() || project?.student?.toString?.();
 
-    if (!project || project.student.toString() !== studentId.toString()) {
+    if (!project || projectStudentId !== studentId.toString()) {
         return next(new ErrorHandler("Project not found or access denied", 404));
     }
 
@@ -291,14 +292,28 @@ export const getFeedback = asyncHandler(async (req, res, next) => {
 
 export const downloadFile = asyncHandler(async (req, res, next) => {
     const {projectId, fileId} = req.params;
-    const studentId = req.user._id;
-    const project = await projectService.getProjectById(projectId);
-    if (!project || project.student.toString() !== studentId.toString()) {
-        return next(new ErrorHandler("Project not found or access denied", 404));
+    const studentId = req.user._id?.toString?.() || String(req.user._id);
+
+    if (!mongoose.Types.ObjectId.isValid(fileId)) {
+        return next(new ErrorHandler("Invalid file ID", 400));
     }
+
+    // Use authenticated student + fileId as source of truth, so stale projectId does not block downloads.
+    let project = await Project.findOne({ student: studentId, "files._id": fileId });
+
+    if (!project && mongoose.Types.ObjectId.isValid(projectId)) {
+        project = await Project.findById(projectId);
+    }
+
+    const ownerId = project?.student?._id?.toString?.() || project?.student?.toString?.();
+    if (!project || ownerId !== studentId) {
+        return next(new ErrorHandler("File not found", 404));
+    }
+
     const file = project.files.id(fileId);
     if (!file) {
         return next(new ErrorHandler("File not found", 404));
     }
-    fileService.streamFileDownload(file.fileUrl, file.originalName, res);
+    const downloadName = file.orginalName || file.originalName || "downloaded_file";
+    fileService.streamFileDownload(file.fileUrl, downloadName, res);
 });
